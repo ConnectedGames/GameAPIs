@@ -21,7 +21,7 @@ public class MinecraftController {
 
     @RequestMapping(value = "/player/uuid/{username}", method = RequestMethod.GET)
     public DeferredResult<ResponseEntity<?>> getUniqueID(@PathVariable String username) {
-        final DeferredResult<ResponseEntity<?>> result = new DeferredResult<>(5000L);
+        final DeferredResult<ResponseEntity<?>> result = new DeferredResult<>(2000L);
 
         if (username.length() > 16) {
             result.setResult(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Only usernames are supported."));

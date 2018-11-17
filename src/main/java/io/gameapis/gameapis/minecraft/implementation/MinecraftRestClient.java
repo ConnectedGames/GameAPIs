@@ -25,7 +25,7 @@ public class MinecraftRestClient {
         return CompletableFuture.completedFuture(client.get()
                 .uri(UUID_FETCH_URL, username)
                 .exchange()
-                .timeout(Duration.of(1500, ChronoUnit.MILLIS))
+                .timeout(Duration.of(1000, ChronoUnit.MILLIS))
                 .flatMap(response -> response.bodyToMono(UniqueIdData.class))
                 .blockOptional()
                 .orElseThrow(() -> new RuntimeException("Response is empty!")));
