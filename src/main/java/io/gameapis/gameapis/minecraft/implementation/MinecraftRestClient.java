@@ -5,6 +5,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
@@ -25,8 +26,8 @@ public class MinecraftRestClient {
         return CompletableFuture.completedFuture(client.get()
                 .uri(UUID_FETCH_URL, username)
                 .exchange()
-                .timeout(Duration.of(1000, ChronoUnit.MILLIS))
                 .flatMap(response -> response.bodyToMono(UniqueIdData.class))
+                .timeout(Duration.of(1000, ChronoUnit.MILLIS))
                 .blockOptional()
                 .orElseThrow(() -> new RuntimeException("Response is empty!")));
     }
