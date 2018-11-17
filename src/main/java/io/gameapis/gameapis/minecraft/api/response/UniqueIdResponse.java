@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class UniqueIDResponse {
+public class UniqueIdResponse {
 
     private String name;
     private String id;

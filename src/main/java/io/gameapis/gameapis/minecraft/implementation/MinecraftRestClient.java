@@ -1,17 +1,18 @@
 package io.gameapis.gameapis.minecraft.implementation;
 
-import io.gameapis.gameapis.minecraft.implementation.response.UniqueIDResponse;
+import io.gameapis.gameapis.minecraft.implementation.data.UniqueIdData;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.concurrent.Future;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.CompletableFuture;
 
-@Service
-public class MinecraftAPIService {
+@Component
+public class MinecraftRestClient {
 
     private final static String UUID_FETCH_URL = "https://api.mojang.com/users/profiles/minecraft/{username}";
 
@@ -20,11 +21,12 @@ public class MinecraftAPIService {
             .build();
 
     @Async
-    public Future<UniqueIDResponse> performUniqueIdRequest(String username) {
-        return new AsyncResult<>(client.get()
+    public CompletableFuture<UniqueIdData> performUniqueIdRequest(String username) {
+        return CompletableFuture.completedFuture(client.get()
                 .uri(UUID_FETCH_URL, username)
-                .retrieve()
-                .bodyToMono(UniqueIDResponse.class)
+                .exchange()
+                .timeout(Duration.of(1500, ChronoUnit.MILLIS))
+                .flatMap(response -> response.bodyToMono(UniqueIdData.class))
                 .blockOptional()
                 .orElseThrow(() -> new RuntimeException("Response is empty!")));
     }
