@@ -1,4 +1,4 @@
-package io.gameapis.gameapis.utility;
+package io.gameapis.utility;
 
 import lombok.experimental.UtilityClass;
 

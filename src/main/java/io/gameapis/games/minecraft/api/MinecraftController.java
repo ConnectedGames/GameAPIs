@@ -1,10 +1,10 @@
-package io.gameapis.gameapis.minecraft.api;
+package io.gameapis.games.minecraft.api;
 
-import io.gameapis.gameapis.api.response.ErrorResponse;
-import io.gameapis.gameapis.minecraft.api.response.ProfileResponse;
-import io.gameapis.gameapis.minecraft.api.response.UniqueIdResponse;
-import io.gameapis.gameapis.minecraft.implementation.MinecraftService;
-import io.gameapis.gameapis.utility.UniqueIdUtilities;
+import io.gameapis.api.response.ErrorResponse;
+import io.gameapis.games.minecraft.api.response.ProfileResponse;
+import io.gameapis.games.minecraft.api.response.UniqueIdResponse;
+import io.gameapis.games.minecraft.implementation.MinecraftService;
+import io.gameapis.utility.UniqueIdUtilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +22,12 @@ import java.util.UUID;
 @RequestMapping("/api/mc")
 public class MinecraftController {
 
-    @Autowired
     private MinecraftService minecraftService;
+
+    @Autowired
+    public MinecraftController(MinecraftService minecraftService) {
+        this.minecraftService = minecraftService;
+    }
 
     @RequestMapping(value = "/player/uuid/{username}", method = RequestMethod.GET)
     public DeferredResult<ResponseEntity<?>> getUniqueId(@PathVariable String username) {

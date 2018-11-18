@@ -1,7 +1,7 @@
-package io.gameapis.gameapis.minecraft.implementation;
+package io.gameapis.games.minecraft.implementation;
 
-import io.gameapis.gameapis.minecraft.implementation.data.ProfileData;
-import io.gameapis.gameapis.minecraft.implementation.data.UniqueIdData;
+import io.gameapis.games.minecraft.implementation.data.ProfileData;
+import io.gameapis.games.minecraft.implementation.data.UniqueIdData;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;

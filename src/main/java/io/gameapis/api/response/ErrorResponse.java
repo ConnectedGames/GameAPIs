@@ -1,4 +1,4 @@
-package io.gameapis.gameapis.api.response;
+package io.gameapis.api.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

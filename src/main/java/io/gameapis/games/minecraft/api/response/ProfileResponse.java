@@ -1,4 +1,4 @@
-package io.gameapis.gameapis.minecraft.api.response;
+package io.gameapis.games.minecraft.api.response;
 
 import lombok.Builder;
 import lombok.Data;
