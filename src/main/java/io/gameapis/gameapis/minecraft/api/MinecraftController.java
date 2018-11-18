@@ -1,6 +1,7 @@
 package io.gameapis.gameapis.minecraft.api;
 
 import io.gameapis.gameapis.api.response.ErrorResponse;
+import io.gameapis.gameapis.minecraft.api.response.ProfileResponse;
 import io.gameapis.gameapis.minecraft.api.response.UniqueIdResponse;
 import io.gameapis.gameapis.minecraft.implementation.MinecraftService;
 import io.gameapis.gameapis.utility.UniqueIdUtilities;
@@ -13,6 +14,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/mc")
 public class MinecraftController {
@@ -21,7 +26,7 @@ public class MinecraftController {
     private MinecraftService minecraftService;
 
     @RequestMapping(value = "/player/uuid/{username}", method = RequestMethod.GET)
-    public DeferredResult<ResponseEntity<?>> getUniqueID(@PathVariable String username) {
+    public DeferredResult<ResponseEntity<?>> getUniqueId(@PathVariable String username) {
         final DeferredResult<ResponseEntity<?>> result = new DeferredResult<>(5000L);
 
         if (username.length() > 16) {
@@ -38,6 +43,42 @@ public class MinecraftController {
                         .name(uniqueIdData.getName())
                         .id(uniqueIdData.getId())
                         .uuid_formatted(UniqueIdUtilities.parseDashLessUniqueId(uniqueIdData.getId()).toString())
+                        .build())));
+
+        return result;
+    }
+
+    @RequestMapping(value = "/player/profile/{uniqueId}", method = RequestMethod.GET)
+    public DeferredResult<ResponseEntity<?>> getProfile(@PathVariable String uniqueId) {
+        final DeferredResult<ResponseEntity<?>> result = new DeferredResult<>(5000L);
+
+        if (uniqueId.length() != 32) {
+            result.setResult(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ErrorResponse.error("Invalid UUID specified.")));
+            return result;
+        }
+
+        UUID parsedUniqueId;
+        try {
+            parsedUniqueId = UniqueIdUtilities.parseDashLessUniqueId(uniqueId);
+        } catch (NumberFormatException e) {
+            result.setResult(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ErrorResponse.error("Invalid UUID specified.")));
+            return result;
+        }
+
+        result.onTimeout(() -> result.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                .body(ErrorResponse.error("Request timeout occurred."))));
+
+        minecraftService.fetchProfile(parsedUniqueId).thenAccept(profileData ->
+                result.setResult(ResponseEntity.ok(ProfileResponse.builder()
+                        .name(profileData.getName())
+                        .id(profileData.getId())
+                        .uuid_formatted(UniqueIdUtilities.parseDashLessUniqueId(profileData.getId()).toString())
+                        .properties(profileData.getProperties())
+                        .properties_decoded(new ArrayList<>())
+                        .expiresAt(Instant.now().getEpochSecond())
+                        .expiresAtHR(Instant.now())
                         .build())));
 
         return result;
