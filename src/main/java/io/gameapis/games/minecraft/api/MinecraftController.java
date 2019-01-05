@@ -87,4 +87,13 @@ public class MinecraftController {
 
         return result;
     }
+
+    @RequestMapping(value = "/extra/blockedservers/check/{domain}", method = RequestMethod.GET)
+    public DeferredResult<ResponseEntity<?>> getBlacklisted(@PathVariable String domain) {
+        final DeferredResult<ResponseEntity<?>> result = new DeferredResult<>(5000L);
+
+        minecraftService.fetchBlacklisted(domain).thenAccept(blacklistData -> result.setResult(ResponseEntity.ok(blacklistData)));
+
+        return result;
+    }
 }

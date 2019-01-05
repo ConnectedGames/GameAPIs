@@ -1,29 +1,26 @@
 package io.gameapis.games.minecraft.implementation;
 
-import io.gameapis.games.minecraft.implementation.data.ProfileData;
-import io.gameapis.games.minecraft.implementation.data.UniqueIdData;
+import io.gameapis.games.minecraft.implementation.data.MojangBlacklist;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.TcpClient;
 
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class MinecraftRestClient {
+public class MinecrafBlacklistClient {
 
-    private final static String UNIQUE_ID_FETCH_URL = "https://api.mojang.com/users/profiles/minecraft/{username}";
-    private final static String PROFILE_FETCH_URL = "https://sessionserver.mojang.com/session/minecraft/profile/{uniqueId}/?unsigned=false";
+    private static final String BLACKLIST_URL = "https://sessionserver.mojang.com/blockedservers";
 
     private TcpClient tcpClient = TcpClient.create()
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1000)
@@ -36,23 +33,18 @@ public class MinecraftRestClient {
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .build();
 
+    @Cacheable("minecraft.blacklist")
     @Async
-    public CompletableFuture<UniqueIdData> performUniqueIdRequest(String username) {
-        return CompletableFuture.completedFuture(client.get()
-                .uri(UNIQUE_ID_FETCH_URL, username)
+    public CompletableFuture<MojangBlacklist> performBlacklistRequest() {
+        String s = client.get()
+                .uri(BLACKLIST_URL)
                 .retrieve()
-                .bodyToMono(UniqueIdData.class)
+                .bodyToMono(String.class)
                 .blockOptional()
-                .orElseThrow(() -> new RuntimeException("Response is empty!")));
-    }
+                .orElseThrow(() -> new RuntimeException("Response is empty!"));
 
-    @Async
-    public CompletableFuture<ProfileData> performProfileRequest(UUID uniqueId) {
-        return CompletableFuture.completedFuture(client.get()
-                .uri(PROFILE_FETCH_URL, uniqueId.toString().replace("-", ""))
-                .retrieve()
-                .bodyToMono(ProfileData.class)
-                .blockOptional()
-                .orElseThrow(() -> new RuntimeException("Response is empty!")));
+        MojangBlacklist mojangBlacklist = new MojangBlacklist(s);
+
+        return CompletableFuture.completedFuture(mojangBlacklist);
     }
 }
